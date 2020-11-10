@@ -1,4 +1,4 @@
-package demo.mockito;
+package demo.mockito.c_argumentmatchers;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -19,6 +19,8 @@ import java.io.FileFilter;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.exceptions.misusing.InvalidUseOfMatchersException;
+
+import demo.mockito.PasswordEncoder;
 
 public class ArgumentMatchersTest {
 

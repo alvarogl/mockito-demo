@@ -1,4 +1,4 @@
-package demo.mockito;
+package demo.mockito.c_argumentmatchers;
 
 import static org.mockito.AdditionalMatchers.or;
 import static org.mockito.Mockito.endsWith;
@@ -8,6 +8,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
+
+import demo.mockito.PasswordEncoder;
 
 public class HowItWorksTest {
 

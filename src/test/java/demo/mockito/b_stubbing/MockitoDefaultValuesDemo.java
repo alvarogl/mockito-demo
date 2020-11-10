@@ -1,4 +1,4 @@
-package demo.mockito;
+package demo.mockito.b_stubbing;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

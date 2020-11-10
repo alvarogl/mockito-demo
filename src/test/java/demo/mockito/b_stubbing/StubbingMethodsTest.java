@@ -1,8 +1,9 @@
-package demo.mockito;
+package demo.mockito.b_stubbing;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -11,6 +12,8 @@ import java.util.Date;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
+
+import demo.mockito.PasswordEncoder;
 
 public class StubbingMethodsTest {
 
@@ -23,6 +26,7 @@ public class StubbingMethodsTest {
 
 	@Test
 	public void thenReturn() {
+		//doReturn(new StringBuilder()).when(passwordEncoder).encode("1");
 		when(passwordEncoder.encode("1")).thenReturn("a");
 
 		assertEquals("a", passwordEncoder.encode("1"));
@@ -51,17 +55,6 @@ public class StubbingMethodsTest {
 		});
 
 		passwordEncoder.encode("1");
-	}
-
-	@Test
-	public void thenAnswerCallRealMethod() {
-		Date mock = mock(Date.class);
-		doAnswer(InvocationOnMock::callRealMethod).when(mock).setTime(42);
-		doAnswer(InvocationOnMock::callRealMethod).when(mock).getTime();
-
-		mock.setTime(42);
-
-		assertEquals(42, mock.getTime());
 	}
 
 	@Test(expected = Exception.class)

@@ -1,29 +1,40 @@
-package demo.mockito;
+package demo.mockito.g_mockitosettings;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Answers.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.RETURNS_MOCKS;
 import static org.mockito.Mockito.RETURNS_SMART_NULLS;
 import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
+import static org.mockito.internal.util.MockUtil.isMock;
+import static org.mockito.internal.util.MockUtil.isSpy;
 
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.exceptions.misusing.CannotVerifyStubOnlyMock;
 import org.mockito.exceptions.verification.SmartNullPointerException;
 import org.mockito.exceptions.verification.WantedButNotInvoked;
 import org.mockito.listeners.InvocationListener;
-import org.mockito.listeners.MethodInvocationReport;
+
+import demo.mockito.PasswordEncoder;
+import demo.mockito.User;
+import demo.mockito.UserRepository;
+import demo.mockito.UserService;
 
 public class MockSettingsTest {
 
-	@Test(expected = SmartNullPointerException.class)
+	@Test
 	public void returnsSmartNulls() {
 		UserRepository userRepository = mock(UserRepository.class, RETURNS_SMART_NULLS);
 		User user = userRepository.findById(null);
@@ -32,7 +43,14 @@ public class MockSettingsTest {
 		assertNotNull(user);
 
 		// will fail with SmartNullPointerException and nice stacktrace
-		String passwordHash = user.getPasswordHash();
+		String passwordHash = null;
+		try {
+			passwordHash = user.getPasswordHash();
+			Assert.fail();
+		} catch (SmartNullPointerException e) {
+			e.printStackTrace();
+			Assert.assertNull(passwordHash);
+		}
 	}
 
 	@Test
@@ -72,18 +90,15 @@ public class MockSettingsTest {
 
 	@Test
 	public void invocationListeners() {
-		InvocationListener invocationListener = new InvocationListener() {
-			@Override
-			public void reportInvocation(MethodInvocationReport report) {
-				if (report.threwException()) {
-					Throwable throwable = report.getThrowable();
-					// do something with throwable
-					throwable.printStackTrace();
-				} else {
-					Object returnedValue = report.getReturnedValue();
-					// do something with returnedValue
-					System.out.println(returnedValue);
-				}
+		InvocationListener invocationListener = report -> {
+			if (report.threwException()) {
+				Throwable throwable = report.getThrowable();
+				// do something with throwable
+				throwable.printStackTrace();
+			} else {
+				Object returnedValue = report.getReturnedValue();
+				// do something with returnedValue
+				System.out.println(returnedValue);
 			}
 		};
 
@@ -101,10 +116,11 @@ public class MockSettingsTest {
 		when(passwordEncoder.encode("1")).thenReturn("encoded1");
 
 		// even this won't help avoid calling a listener
-		//doReturn("encoded1").when(passwordEncoder).encode("1");
+		doReturn("encoded2").when(passwordEncoder).encode("2");
 
 		passwordEncoder.encode("1");
 		passwordEncoder.encode("2");
+		passwordEncoder.encode("3");
 	}
 
 	@Test
@@ -113,5 +129,34 @@ public class MockSettingsTest {
 
 		UserService userServiceMock =
 				mock(UserService.class, withSettings().spiedInstance(userService).name("coolService"));
+
+		Assert.assertTrue(isMock(userServiceMock));
+	}
+
+	@Test
+	public void stubOnly() {
+		UserService userServiceMock = mock(UserService.class, withSettings().stubOnly().name("Stubbed only mock"));
+
+		userServiceMock.getPasswordEncoder();
+
+		//This should fail as we cannot verify (memory saving)
+		try {
+			verify(userServiceMock).getPasswordEncoder();
+			Assert.fail();
+		} catch (CannotVerifyStubOnlyMock e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Test
+	public void spyInstantiation() {
+		UserService userService = new UserService(mock(UserRepository.class), mock(PasswordEncoder.class));
+
+		final UserService spyService = spy(userService);
+		Assert.assertTrue(isSpy(spyService));
+
+		final UserService mockedSpyService = mock(UserService.class,
+				withSettings().spiedInstance(userService).defaultAnswer(CALLS_REAL_METHODS));
+		Assert.assertTrue(isSpy(mockedSpyService));
 	}
 }

@@ -1,4 +1,4 @@
-package demo.mockito;
+package demo.mockito.f_argumentcaptors;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -8,9 +8,18 @@ import static org.mockito.Mockito.verify;
 import java.util.Arrays;
 
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
+import org.mockito.junit.MockitoJUnitRunner;
 
+import demo.mockito.PasswordEncoder;
+
+@RunWith(MockitoJUnitRunner.class)
 public class ArgumentCaptorTest {
+
+	@Captor
+	private ArgumentCaptor<String> stringCaptor;
 
 	@Test
 	public void testSingleCall() {
@@ -22,6 +31,17 @@ public class ArgumentCaptorTest {
 		verify(passwordEncoder).encode(passwordCaptor.capture());
 
 		assertEquals("password", passwordCaptor.getValue());
+	}
+
+	@Test
+	public void testSingleCallWithAnnotation() {
+		PasswordEncoder passwordEncoder = mock(PasswordEncoder.class);
+
+		passwordEncoder.encode("password");
+
+		verify(passwordEncoder).encode(stringCaptor.capture());
+
+		assertEquals("password", stringCaptor.getValue());
 	}
 
 	@Test
