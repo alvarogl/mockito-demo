@@ -109,6 +109,7 @@ public class VerificationTest {
 		public String get(final int index) {
 			return null;
 		}
+
 		@Override
 		public int size() {
 			return 0;

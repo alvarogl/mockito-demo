@@ -1,9 +1,7 @@
 package demo.mockito.b_stubbing;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -11,7 +9,6 @@ import java.util.Date;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
 
 import demo.mockito.PasswordEncoder;
 
