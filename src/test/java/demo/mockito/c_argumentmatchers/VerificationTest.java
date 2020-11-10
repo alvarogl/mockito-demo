@@ -1,7 +1,9 @@
 package demo.mockito.c_argumentmatchers;
 
+import static org.mockito.Mockito.after;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -18,7 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
-public class VerifyTest {
+public class VerificationTest {
 
 	@Mock
 	private MyList mockedList;
@@ -76,6 +78,29 @@ public class VerifyTest {
 
 		verify(mockedList, atLeast(1)).clear();
 		verify(mockedList, atMost(10)).clear();
+	}
+
+	@Test
+	public void verifyTimeout() {
+		useMyListInOtherThread();
+		verify(mockedList, timeout(500)).add("a");
+	}
+
+	@Test
+	public void verifyAfter() {
+		useMyListInOtherThread();
+		verify(mockedList, after(500)).add("a");
+	}
+
+	private void useMyListInOtherThread() {
+		new Thread(() -> {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				throw new RuntimeException(e);
+			}
+			mockedList.add("a");
+		}).start();
 	}
 
 	private static class MyList extends AbstractList<String> {
