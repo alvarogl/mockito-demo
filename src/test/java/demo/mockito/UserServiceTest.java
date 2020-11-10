@@ -1,86 +1,93 @@
 package demo.mockito;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.inOrder;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.when;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
-
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
 
 /**
  * Shows how to use mock(), verify(), inOrder(), ArgumentCaptor and argument matchers.
  */
 public class UserServiceTest {
 
-    private static final String PASSWORD = "password";
-    private static final User ENABLED_USER = new User("user id", "hash", true);
-    private static final User DISABLED_USER = new User("disabled user id", "disabled user password hash", false);
-    
-    private UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
-    private UserService userService;
+	private static final String PASSWORD = "password";
+	private static final User ENABLED_USER = new User("user id", "hash", true);
+	private static final User DISABLED_USER = new User("disabled user id", "disabled user password hash", false);
 
-    @Before
-    public void setup() {
-        userRepository = createUserRepository();
-        passwordEncoder = createPasswordEncoder();
-        userService = new UserService(userRepository, passwordEncoder);
-    }
+	private UserRepository userRepository;
+	private PasswordEncoder passwordEncoder;
+	private UserService userService;
 
-    @Test
-    public void shouldBeValidForValidCredentials() {
-        boolean userIsValid = userService.isValidUser(ENABLED_USER.getId(), PASSWORD);
-        assertTrue(userIsValid);
+	@Before
+	public void setup() {
+		userRepository = createUserRepository();
+		passwordEncoder = createPasswordEncoder();
+		userService = new UserService(userRepository, passwordEncoder);
+	}
 
-        // userRepository had to be used to find a user with id="user id"
-        verify(userRepository).findById(ENABLED_USER.getId());
+	@Test
+	public void shouldBeValidForValidCredentials() {
+		boolean userIsValid = userService.isValidUser(ENABLED_USER.getId(), PASSWORD);
+		assertTrue(userIsValid);
 
-        // passwordEncoder had to be used to compute a hash of "password"
-        verify(passwordEncoder).encode(PASSWORD);
-    }
+		// userRepository had to be used to find a user with id="user id"
+		verify(userRepository).findById(ENABLED_USER.getId());
 
-    @Test
-    public void shouldBeInvalidForInvalidId() {
-        boolean userIsValid = userService.isValidUser("invalid id", PASSWORD);
-        assertFalse(userIsValid);
+		// passwordEncoder had to be used to compute a hash of "password"
+		verify(passwordEncoder).encode(PASSWORD);
+	}
 
-        InOrder inOrder = inOrder(userRepository, passwordEncoder);
-        inOrder.verify(userRepository).findById("invalid id");
-        inOrder.verify(passwordEncoder, never()).encode(anyString());
-    }
+	@Test
+	public void shouldBeInvalidForInvalidId() {
+		boolean userIsValid = userService.isValidUser("invalid id", PASSWORD);
+		assertFalse(userIsValid);
 
-    @Test
-    public void shouldBeInvalidForInvalidPassword() {
-        boolean userIsValid = userService.isValidUser(ENABLED_USER.getId(), "invalid");
-        assertFalse(userIsValid);
+		InOrder inOrder = inOrder(userRepository, passwordEncoder);
+		inOrder.verify(userRepository).findById("invalid id");
+		inOrder.verify(passwordEncoder, never()).encode(anyString());
+	}
 
-        ArgumentCaptor<String> passwordCaptor = ArgumentCaptor.forClass(String.class);
-        verify(passwordEncoder).encode(passwordCaptor.capture());
-        assertEquals("invalid", passwordCaptor.getValue());
-    }
+	@Test
+	public void shouldBeInvalidForInvalidPassword() {
+		boolean userIsValid = userService.isValidUser(ENABLED_USER.getId(), "invalid");
+		assertFalse(userIsValid);
 
-    @Test
-    public void shouldBeInvalidForDisabledUser() {
-        boolean userIsValid = userService.isValidUser(DISABLED_USER.getId(), PASSWORD);
-        assertFalse(userIsValid);
+		ArgumentCaptor<String> passwordCaptor = ArgumentCaptor.forClass(String.class);
+		verify(passwordEncoder).encode(passwordCaptor.capture());
+		assertEquals("invalid", passwordCaptor.getValue());
+	}
 
-        verify(userRepository).findById(DISABLED_USER.getId());
-        verifyZeroInteractions(passwordEncoder);
-    }
+	@Test
+	public void shouldBeInvalidForDisabledUser() {
+		boolean userIsValid = userService.isValidUser(DISABLED_USER.getId(), PASSWORD);
+		assertFalse(userIsValid);
 
-    private PasswordEncoder createPasswordEncoder() {
-        PasswordEncoder mock = mock(PasswordEncoder.class);
-        when(mock.encode(anyString())).thenReturn("any password hash");
-        when(mock.encode(PASSWORD)).thenReturn(ENABLED_USER.getPasswordHash());
-        return mock;
-    }
+		verify(userRepository).findById(DISABLED_USER.getId());
+		verifyZeroInteractions(passwordEncoder);
+	}
 
-    private UserRepository createUserRepository() {
-        UserRepository mock = mock(UserRepository.class);
-        when(mock.findById(ENABLED_USER.getId())).thenReturn(ENABLED_USER);
-        when(mock.findById(DISABLED_USER.getId())).thenReturn(DISABLED_USER);
-        return mock;
-    }
+	private PasswordEncoder createPasswordEncoder() {
+		PasswordEncoder mock = mock(PasswordEncoder.class);
+		when(mock.encode(anyString())).thenReturn("any password hash");
+		when(mock.encode(PASSWORD)).thenReturn(ENABLED_USER.getPasswordHash());
+		return mock;
+	}
+
+	private UserRepository createUserRepository() {
+		UserRepository mock = mock(UserRepository.class);
+		when(mock.findById(ENABLED_USER.getId())).thenReturn(ENABLED_USER);
+		when(mock.findById(DISABLED_USER.getId())).thenReturn(DISABLED_USER);
+		return mock;
+	}
 }
