@@ -3,6 +3,7 @@ package demo.mockito.g_mockitosettings;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Answers.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.RETURNS_MOCKS;
@@ -28,6 +29,7 @@ import org.mockito.exceptions.verification.WantedButNotInvoked;
 import org.mockito.listeners.InvocationListener;
 
 import demo.mockito.PasswordEncoder;
+import demo.mockito.PasswordEncoderImpl;
 import demo.mockito.User;
 import demo.mockito.UserRepository;
 import demo.mockito.UserService;
@@ -105,7 +107,13 @@ public class MockSettingsTest {
 		PasswordEncoder passwordEncoder =
 				mock(PasswordEncoder.class, withSettings().invocationListeners(invocationListener));
 
-		passwordEncoder.encode("1");
+		PasswordEncoder passwordEncoderImpl = mock(PasswordEncoderImpl.class,
+				withSettings().invocationListeners(invocationListener).defaultAnswer(CALLS_REAL_METHODS));
+
+		final String reverseMock = passwordEncoder.encode("1");
+		assertNull(reverseMock);
+		final String reverseReal = passwordEncoderImpl.encode("2ABC");
+		assertEquals("CBA2", reverseReal);
 	}
 
 	@Test
@@ -155,8 +163,8 @@ public class MockSettingsTest {
 		final UserService spyService = spy(userService);
 		Assert.assertTrue(isSpy(spyService));
 
-		final UserService mockedSpyService = mock(UserService.class,
-				withSettings().spiedInstance(userService).defaultAnswer(CALLS_REAL_METHODS));
+		final UserService mockedSpyService =
+				mock(UserService.class, withSettings().spiedInstance(userService).defaultAnswer(CALLS_REAL_METHODS));
 		Assert.assertTrue(isSpy(mockedSpyService));
 	}
 }
