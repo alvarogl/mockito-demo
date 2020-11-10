@@ -1,1 +1,1 @@
-A companion repository for [A Unit Testing Practitioner's Guide to Everyday Mockito](https://www.toptal.com/java/a-guide-to-everyday-mockito).
+Repository for Mockito training of SecuTix. Based on [A Unit Testing Practitioner's Guide to Everyday Mockito](https://www.toptal.com/java/a-guide-to-everyday-mockito).
