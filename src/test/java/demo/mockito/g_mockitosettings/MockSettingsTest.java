@@ -27,6 +27,7 @@ import org.mockito.exceptions.misusing.CannotVerifyStubOnlyMock;
 import org.mockito.exceptions.verification.SmartNullPointerException;
 import org.mockito.exceptions.verification.WantedButNotInvoked;
 import org.mockito.listeners.InvocationListener;
+import org.mockito.listeners.VerificationStartedListener;
 
 import demo.mockito.PasswordEncoder;
 import demo.mockito.PasswordEncoderImpl;
@@ -104,16 +105,24 @@ public class MockSettingsTest {
 			}
 		};
 
-		PasswordEncoder passwordEncoder =
-				mock(PasswordEncoder.class, withSettings().invocationListeners(invocationListener));
+		VerificationStartedListener verificationStartedListener = event -> {
+			System.out.println("Verification started for " + event.getMock().getClass());
+		};
+
+		PasswordEncoder passwordEncoder = mock(PasswordEncoder.class,
+				withSettings().invocationListeners(invocationListener)
+						.verificationStartedListeners(verificationStartedListener));
 
 		PasswordEncoder passwordEncoderImpl = mock(PasswordEncoderImpl.class,
-				withSettings().invocationListeners(invocationListener).defaultAnswer(CALLS_REAL_METHODS));
+				withSettings().invocationListeners(invocationListener)
+						.verificationStartedListeners(verificationStartedListener).defaultAnswer(CALLS_REAL_METHODS));
 
 		final String reverseMock = passwordEncoder.encode("1");
 		assertNull(reverseMock);
 		final String reverseReal = passwordEncoderImpl.encode("2ABC");
+		verify(passwordEncoderImpl).encode("2ABC");
 		assertEquals("CBA2", reverseReal);
+
 	}
 
 	@Test
